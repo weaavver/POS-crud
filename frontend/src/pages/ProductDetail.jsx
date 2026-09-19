@@ -37,7 +37,7 @@ export default function ProductDetail() {
         <div>
           <div className="aspect-video bg-[#16202d] border border-[#2a3f5a] rounded-lg overflow-hidden flex items-center justify-center">
             {activeImage ? (
-              <img src={activeImage} alt={product.title} className="w-full h-full object-cover" />
+              <img src={activeImage} alt={product.title} className="w-full h-full object-contain" />
             ) : (
               <div className="w-full h-full animate-pulse bg-gradient-to-br from-[#1b2838] via-[#22344a] to-[#1b2838]" />
             )}
@@ -53,7 +53,7 @@ export default function ProductDetail() {
                     activeImage === img ? 'border-[#66c0f4]' : 'border-transparent'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img} alt="" className="w-full h-full object-contain bg-[#16202d]" />
                 </button>
               ))}
             </div>
