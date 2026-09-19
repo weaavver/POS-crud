@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createProduct } from '../../api/products';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createProduct, updateProduct, getProduct } from '../../api/products';
 import { useAuth } from '../../context/AuthContext';
+import Spinner from '../../components/Spinner';
 
 const OS_OPTIONS = ['Windows 7', 'Windows 10', 'Windows 11', 'macOS', 'Linux'];
 const PROCESSOR_OPTIONS = [
@@ -26,6 +27,8 @@ const STORAGE_OPTIONS = ['1 GB available space', '5 GB available space', '15 GB 
 export default function AddProduct() {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -46,6 +49,36 @@ export default function AddProduct() {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(isEditing);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    getProduct(id)
+      .then((product) => {
+        setForm({
+          title: product.title || '',
+          description: product.description || '',
+          price: product.price ?? '',
+          type: product.type || 'game',
+          platform: product.platform || '',
+          cover_image: product.cover_image || '',
+          gallery_images: (product.gallery_images || []).join(', '),
+          download_url: product.download_url || '',
+        });
+        if (product.system_requirements) {
+          setSysReq({
+            os: product.system_requirements.os || '',
+            processor: product.system_requirements.processor || '',
+            memory: product.system_requirements.memory || '',
+            graphics: product.system_requirements.graphics || '',
+            directx: product.system_requirements.directx || '',
+            storage: product.system_requirements.storage || '',
+          });
+        }
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [id, isEditing]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -79,7 +112,7 @@ export default function AddProduct() {
             }
           : null,
       };
-      await createProduct(payload, token);
+      await (isEditing ? updateProduct(id, payload, token) : createProduct(payload, token));
       navigate('/admin');
     } catch (err) {
       setError(err.message);
@@ -88,12 +121,20 @@ export default function AddProduct() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-10">
+        <Spinner size={24} />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-white mb-6">Add Product</h1>
+    <div className="max-w-2xl mx-auto px-4 py-10 fade-in-up">
+      <h1 className="text-2xl font-bold text-white mb-6">{isEditing ? 'Edit Product' : 'Add Product'}</h1>
 
       {error && (
-        <div className="bg-red-900/30 border border-red-700 text-red-300 text-sm rounded px-3 py-2 mb-4">
+        <div className="bg-red-900/30 border border-red-700 text-red-300 text-sm rounded px-3 py-2 mb-4 fade-in-up">
           {error}
         </div>
       )}
@@ -150,9 +191,10 @@ export default function AddProduct() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-2 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50 mt-6"
+          className="w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-2 hover:bg-[#7fd0ff] active:scale-[0.98] transition-all disabled:opacity-50 mt-6 flex items-center justify-center gap-2"
         >
-          {submitting ? 'Creating...' : 'Create Product'}
+          {submitting && <Spinner size={16} />}
+          {submitting ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Changes' : 'Create Product')}
         </button>
       </form>
     </div>

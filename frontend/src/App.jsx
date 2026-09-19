@@ -56,6 +56,14 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route
+          path="/admin/edit-product/:id"
+          element={
+            <AdminRoute>
+              <AddProduct />
+            </AdminRoute>
+          }
+        />
       </Routes>
     </Layout>
   );
