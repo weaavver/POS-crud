@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export async function createOrder(items, token) {
   // Only send product IDs. The server looks up the real price and download link.

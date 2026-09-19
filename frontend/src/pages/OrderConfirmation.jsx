@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = 'http://localhost:8000';
+frontend/src/pages/OrderConfirmation.jsx
 
 export default function OrderConfirmation() {
   const { id } = useParams();

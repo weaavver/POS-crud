@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // FastAPI returns `detail` as a string for our own errors, but as an array of
 // objects for validation errors (422). Turn either one into a readable message.

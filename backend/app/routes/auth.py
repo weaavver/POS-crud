@@ -12,6 +12,7 @@ async def register(user: UserRegister):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Role is always "customer" here. Admins are promoted by hand in MongoDB.
     user_doc = {
         "name": user.name,
         "email": user.email,
