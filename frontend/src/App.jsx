@@ -17,10 +17,6 @@ import About from './pages/About';
 function Home() {
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 pt-10">
-        <h1 className="text-3xl font-bold text-white">Welcome to Vault</h1>
-        <p className="mt-2 text-[#8f98a0]">Your digital library starts here.</p>
-      </div>
       <ProductGrid />
     </>
   );

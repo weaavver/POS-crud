@@ -4,8 +4,8 @@ from bson.errors import InvalidId
 from datetime import datetime, timezone
 from typing import List
 
-from app.database import orders_collection
-from app.models.order import OrderCreate, OrderOut
+from app.database import orders_collection, products_collection
+from app.models.order import OrderCreate, OrderOut, OrderItem
 from app.utils.security import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -19,14 +19,32 @@ def order_helper(order) -> dict:
 
 @router.post("/", response_model=OrderOut, status_code=201)
 async def create_order(order: OrderCreate, current_user: dict = Depends(get_current_user)):
-    if not order.items:
+    if not order.product_ids:
         raise HTTPException(status_code=400, detail="Cannot place an empty order")
 
-    total = sum(item.price for item in order.items)
+    items = []
+    for pid in order.product_ids:
+        try:
+            obj_id = ObjectId(pid)
+        except InvalidId:
+            raise HTTPException(status_code=400, detail=f"Invalid product ID: {pid}")
+
+        product = await products_collection.find_one({"_id": obj_id})
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product not found: {pid}")
+
+        items.append(OrderItem(
+            product_id=pid,
+            title=product["title"],
+            price=product["price"],
+            download_url=product["download_url"],
+        ))
+
+    total = sum(item.price for item in items)
 
     order_doc = {
         "user_id": str(current_user["_id"]),
-        "items": [item.model_dump() for item in order.items],
+        "items": [item.model_dump() for item in items],
         "total": total,
         "created_at": datetime.now(timezone.utc),
     }
