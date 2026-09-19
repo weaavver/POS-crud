@@ -16,15 +16,15 @@ async def register(user: UserRegister):
         "name": user.name,
         "email": user.email,
         "password": hash_password(user.password),
-        "role": user.role,
+        "role": "customer",
     }
     result = await users_collection.insert_one(user_doc)
     user_id = str(result.inserted_id)
 
-    token = create_access_token({"sub": user_id, "role": user.role})
+    token = create_access_token({"sub": user_id, "role": "customer"})
     return TokenResponse(
         access_token=token,
-        user=UserOut(id=user_id, name=user.name, email=user.email, role=user.role),
+        user=UserOut(id=user_id, name=user.name, email=user.email, role="customer"),
     )
 
 

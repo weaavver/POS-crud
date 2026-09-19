@@ -2,10 +2,9 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, Literal
 
 class UserRegister(BaseModel):
-    name: str
+    name: str = Field(min_length=1)
     email: EmailStr
-    password: str
-    role: Literal["admin", "customer"] = "customer"
+    password: str = Field(min_length=6)
 
 class UserLogin(BaseModel):
     email: EmailStr

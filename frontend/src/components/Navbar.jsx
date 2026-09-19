@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, User, ShoppingCart, Menu, X, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { items } = useCart();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -14,7 +17,16 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = ['NEW RELEASES', 'GAMES', 'BOOKS', 'ABOUT'];
+  const navLinks = ['NEW RELEASES', 'GAMES', 'ABOUT'];
+
+  // Logged in -> order history, logged out -> login page
+  const userLink = user ? '/orders' : '/login';
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
 
   return (
     <nav className={'sticky top-0 z-50 transition-shadow duration-200 bg-[#171a21] ' + (isScrolled ? 'shadow-lg shadow-black/40' : '')}>
@@ -38,7 +50,7 @@ export default function Navbar() {
             <button className="text-[#c7d5e0] hover:text-white transition-colors">
               <Search size={20} />
             </button>
-            <Link to="/orders" className="text-[#c7d5e0] hover:text-white transition-colors">
+            <Link to={userLink} title={user ? 'My orders' : 'Log in'} className="text-[#c7d5e0] hover:text-white transition-colors">
               <User size={20} />
             </Link>
             <Link to="/cart" className="text-[#c7d5e0] hover:text-white transition-colors relative">
@@ -49,6 +61,11 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+            {user && (
+              <button onClick={handleLogout} title="Log out" className="text-[#c7d5e0] hover:text-white transition-colors">
+                <LogOut size={20} />
+              </button>
+            )}
           </div>
 
           <button className="md:hidden text-[#c7d5e0]" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -66,12 +83,17 @@ export default function Navbar() {
           ))}
           <div className="flex items-center gap-5 pt-3 border-t border-[#2a3f5a]">
             <Search size={20} className="text-[#c7d5e0]" />
-            <Link to="/orders">
+            <Link to={userLink} onClick={() => setMobileMenuOpen(false)}>
               <User size={20} className="text-[#c7d5e0]" />
             </Link>
-            <Link to="/cart">
+            <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
               <ShoppingCart size={20} className="text-[#c7d5e0]" />
             </Link>
+            {user && (
+              <button onClick={handleLogout} title="Log out">
+                <LogOut size={20} className="text-[#c7d5e0]" />
+              </button>
+            )}
           </div>
         </div>
       )}

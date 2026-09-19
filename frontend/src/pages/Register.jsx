@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginRequest } from '../api/auth';
+import { registerRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
-export default function Login() {
+export default function Register() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -14,15 +16,18 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      const data = await loginRequest(email, password);
+      const data = await registerRequest(name, email, password);
+      // Backend returns a token, so the new customer is logged in right away
       login(data.access_token, data.user);
-      if (data.user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -36,7 +41,7 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center bg-[#1b2838] px-4 py-16">
       <div className="w-full max-w-sm bg-[#16202d] border border-[#2a3f5a] rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-white mb-6">Log in to Vault</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Create your Vault account</h1>
 
         {error && (
           <div className="bg-red-900/30 border border-red-700 text-red-300 text-sm rounded px-3 py-2 mb-4">
@@ -45,6 +50,16 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-[#c7d5e0] mb-1">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className={inputClass}
+            />
+          </div>
           <div>
             <label className="block text-sm text-[#c7d5e0] mb-1">Email</label>
             <input
@@ -62,6 +77,18 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#c7d5e0] mb-1">Confirm password</label>
+            <input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              minLength={6}
               className={inputClass}
             />
           </div>
@@ -70,14 +97,14 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-2 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50"
           >
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
         <p className="text-sm text-[#8f98a0] mt-6 text-center">
-          New here?{' '}
-          <Link to="/register" className="text-[#66c0f4] hover:underline">
-            Create an account
+          Already have an account?{' '}
+          <Link to="/login" className="text-[#66c0f4] hover:underline">
+            Log in
           </Link>
         </p>
       </div>

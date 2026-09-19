@@ -11,7 +11,7 @@ class OrderItem(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    items: List[OrderItem]
+    product_ids: List[str]
 
 
 class OrderOut(BaseModel):

@@ -1,13 +1,9 @@
 const API_URL = 'http://localhost:8000';
 
 export async function createOrder(items, token) {
+  // Only send product IDs. The server looks up the real price and download link.
   const payload = {
-    items: items.map((item) => ({
-      product_id: item.id,
-      title: item.title,
-      price: item.price,
-      download_url: item.download_url,
-    })),
+    product_ids: items.map((item) => item.id),
   };
 
   const res = await fetch(`${API_URL}/orders/`, {

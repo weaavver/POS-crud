@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import ProductGrid from './components/ProductGrid';
 import ProductDetail from './pages/ProductDetail';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import AdminRoute from './components/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AddProduct from './pages/admin/AddProduct';
@@ -10,7 +11,6 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory';
-
 
 function Home() {
   return (
@@ -31,11 +31,12 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
-	<Route path="/cart" element={<Cart />} />
-	<Route path="/checkout" element={<Checkout />} />
-	<Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
         <Route path="/orders" element={<OrderHistory />} />
-	<Route
+        <Route
           path="/admin"
           element={
             <AdminRoute>
