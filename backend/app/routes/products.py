@@ -25,7 +25,7 @@ async def get_products(type: Optional[str] = None, is_admin: bool = Depends(get_
         query["type"] = type
 
     products = []
-    async for product in products_collection.find(query):
+    async for product in products_collection.find(query).sort("_id", -1):
         products.append(product_helper(product, include_download_url=is_admin))
     return products
 
