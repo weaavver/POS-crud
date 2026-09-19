@@ -1,46 +1,55 @@
-from pydantic import BaseModel
-from typing import Optional, List, Literal
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+export async function getProducts() {
+  const res = await fetch(`${API_URL}/products/`);
+  if (!res.ok) throw new Error('Failed to fetch products');
+  return res.json();
+}
 
-class SystemRequirements(BaseModel):
-    os: Optional[str] = None
-    processor: Optional[str] = None
-    memory: Optional[str] = None
-    graphics: Optional[str] = None
-    directx: Optional[str] = None
-    storage: Optional[str] = None
+export async function createProduct(product, token) {
+  const res = await fetch(`${API_URL}/products/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(product),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || 'Failed to create product');
+  }
+  return res.json();
+}
 
+export async function deleteProduct(id, token) {
+  const res = await fetch(`${API_URL}/products/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to delete product');
+}
 
-class ProductBase(BaseModel):
-    title: str
-    description: str
-    price: float
-    type: Literal["game", "book"]
-    platform: str
-    cover_image: Optional[str] = None
-    gallery_images: List[str] = []
-    download_url: str
-    system_requirements: Optional[SystemRequirements] = None
-    featured: bool = False
+export async function updateProduct(id, product, token) {
+  const res = await fetch(`${API_URL}/products/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(product),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || 'Failed to update product');
+  }
+  return res.json();
+}
 
-
-class ProductCreate(ProductBase):
-    pass
-
-
-class ProductUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    price: Optional[float] = None
-    type: Optional[Literal["game", "book"]] = None
-    platform: Optional[str] = None
-    cover_image: Optional[str] = None
-    gallery_images: Optional[List[str]] = None
-    download_url: Optional[str] = None
-    system_requirements: Optional[SystemRequirements] = None
-    featured: Optional[bool] = None
-
-
-class ProductOut(ProductBase):
-    id: str
-    download_url: Optional[str] = None
+export async function getProduct(id, token) {
+  const res = await fetch(`${API_URL}/products/${id}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Product not found');
+  return res.json();
+}
