@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-frontend/src/pages/OrderConfirmation.jsx
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function OrderConfirmation() {
   const { id } = useParams();
