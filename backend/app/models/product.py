@@ -2,6 +2,15 @@ from pydantic import BaseModel
 from typing import Optional, List, Literal
 
 
+class SystemRequirements(BaseModel):
+    os: Optional[str] = None
+    processor: Optional[str] = None
+    memory: Optional[str] = None
+    graphics: Optional[str] = None
+    directx: Optional[str] = None
+    storage: Optional[str] = None
+
+
 class ProductBase(BaseModel):
     title: str
     description: str
@@ -11,6 +20,7 @@ class ProductBase(BaseModel):
     cover_image: Optional[str] = None
     gallery_images: List[str] = []
     download_url: str
+    system_requirements: Optional[SystemRequirements] = None
 
 
 class ProductCreate(ProductBase):
@@ -26,6 +36,7 @@ class ProductUpdate(BaseModel):
     cover_image: Optional[str] = None
     gallery_images: Optional[List[str]] = None
     download_url: Optional[str] = None
+    system_requirements: Optional[SystemRequirements] = None
 
 
 class ProductOut(ProductBase):
