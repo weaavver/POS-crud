@@ -63,3 +63,23 @@ async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
             detail="Admin access required",
         )
     return current_user
+
+
+optional_security_scheme = HTTPBearer(auto_error=False)
+
+
+async def get_optional_admin(credentials: HTTPAuthorizationCredentials = Depends(optional_security_scheme)) -> bool:
+    """Returns True if the request carries a valid admin token, False otherwise.
+    Never raises — used to decide whether to include admin-only fields in a
+    public response, not to gate access to the route itself."""
+    if credentials is None:
+        return False
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_id = payload.get("sub")
+        if user_id is None:
+            return False
+        user = await users_collection.find_one({"_id": ObjectId(user_id)})
+        return bool(user and user.get("role") == "admin")
+    except Exception:
+        return False

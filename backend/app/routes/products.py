@@ -5,31 +5,33 @@ from typing import List, Optional
 
 from app.database import products_collection
 from app.models.product import ProductCreate, ProductUpdate, ProductOut
-from app.utils.security import require_admin
+from app.utils.security import require_admin, get_optional_admin
 
 router = APIRouter(prefix="/products", tags=["products"])
 
 
-def product_helper(product) -> dict:
+def product_helper(product, include_download_url: bool = True) -> dict:
     product["id"] = str(product["_id"])
     del product["_id"]
+    if not include_download_url:
+        product["download_url"] = None
     return product
 
 
 @router.get("/", response_model=List[ProductOut])
-async def get_products(type: Optional[str] = None):
+async def get_products(type: Optional[str] = None, is_admin: bool = Depends(get_optional_admin)):
     query = {}
     if type:
         query["type"] = type
 
     products = []
     async for product in products_collection.find(query):
-        products.append(product_helper(product))
+        products.append(product_helper(product, include_download_url=is_admin))
     return products
 
 
 @router.get("/{product_id}", response_model=ProductOut)
-async def get_product(product_id: str):
+async def get_product(product_id: str, is_admin: bool = Depends(get_optional_admin)):
     try:
         obj_id = ObjectId(product_id)
     except InvalidId:
@@ -38,7 +40,7 @@ async def get_product(product_id: str):
     product = await products_collection.find_one({"_id": obj_id})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product_helper(product)
+    return product_helper(product, include_download_url=is_admin)
 
 
 @router.post("/", response_model=ProductOut, status_code=status.HTTP_201_CREATED)

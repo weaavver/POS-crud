@@ -38,6 +38,7 @@ export default function AddProduct() {
     cover_image: '',
     gallery_images: '',
     download_url: '',
+    featured: false,
   });
   const [sysReq, setSysReq] = useState({
     os: '',
@@ -53,7 +54,7 @@ export default function AddProduct() {
 
   useEffect(() => {
     if (!isEditing) return;
-    getProduct(id)
+    getProduct(id, token)
       .then((product) => {
         setForm({
           title: product.title || '',
@@ -64,6 +65,7 @@ export default function AddProduct() {
           cover_image: product.cover_image || '',
           gallery_images: (product.gallery_images || []).join(', '),
           download_url: product.download_url || '',
+          featured: product.featured || false,
         });
         if (product.system_requirements) {
           setSysReq({
@@ -78,10 +80,11 @@ export default function AddProduct() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [id, isEditing]);
+  }, [id, isEditing, token]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, type, value, checked } = e.target;
+    setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleSysReqChange = (e) => {
@@ -173,6 +176,17 @@ export default function AddProduct() {
         <Field label="Cover Image URL" name="cover_image" value={form.cover_image} onChange={handleChange} placeholder="Optional for now" />
         <Field label="Gallery Image URLs (comma-separated)" name="gallery_images" value={form.gallery_images} onChange={handleChange} placeholder="Optional, up to 3" />
         <Field label="Download URL" name="download_url" value={form.download_url} onChange={handleChange} required />
+
+        <label className="flex items-center gap-2 text-sm text-[#c7d5e0]">
+          <input
+            type="checkbox"
+            name="featured"
+            checked={form.featured}
+            onChange={handleChange}
+            className="w-4 h-4 accent-[#66c0f4]"
+          />
+          Feature on homepage carousel
+        </label>
 
         {form.type === 'game' && (
           <div className="border-t border-[#2a3f5a] pt-4 mt-6">

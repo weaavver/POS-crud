@@ -21,6 +21,7 @@ class ProductBase(BaseModel):
     gallery_images: List[str] = []
     download_url: str
     system_requirements: Optional[SystemRequirements] = None
+    featured: bool = False
 
 
 class ProductCreate(ProductBase):
@@ -37,7 +38,9 @@ class ProductUpdate(BaseModel):
     gallery_images: Optional[List[str]] = None
     download_url: Optional[str] = None
     system_requirements: Optional[SystemRequirements] = None
+    featured: Optional[bool] = None
 
 
 class ProductOut(ProductBase):
     id: str
+    download_url: Optional[str] = None
