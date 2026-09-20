@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
+import MoreLikeThis from '../components/MoreLikeThis';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -10,6 +11,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [fading, setFading] = useState(false);
   const [theaterOpen, setTheaterOpen] = useState(false);
   const { addItem, items } = useCart();
 
@@ -31,11 +33,19 @@ export default function ProductDetail() {
   const allImages = (product.gallery_images || []).filter(Boolean);
   const activeImage = allImages[activeIndex] || product.cover_image;
 
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % allImages.length);
+  const changeImage = (newIndexFn) => {
+    setFading(true);
+    setTimeout(() => {
+      setActiveIndex(newIndexFn);
+      setFading(false);
+    }, 150);
+  };
+
+  const goPrev = () => changeImage((prev) => (prev - 1 + allImages.length) % allImages.length);
+  const goNext = () => changeImage((prev) => (prev + 1) % allImages.length);
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       {product.cover_image && (
         <div
           className="absolute inset-0 h-[600px] bg-cover bg-center opacity-25 blur-md scale-110"
@@ -52,13 +62,19 @@ export default function ProductDetail() {
 
         <div className="grid md:grid-cols-[1fr_320px] gap-6 mt-6">
           <div>
-            {/* Main gallery viewer with hover arrows */}
             <div
               className="relative group aspect-video bg-[#0e1621] border border-[#2a3f5a] rounded overflow-hidden flex items-center justify-center cursor-pointer"
               onClick={() => allImages.length > 0 && setTheaterOpen(true)}
             >
               {activeImage ? (
-                <img src={activeImage} alt={product.title} className="w-full h-full object-cover" />
+                <img
+                  src={activeImage}
+                  alt={product.title}
+                  className={
+                    'w-full h-full object-cover transition-opacity duration-150 ' +
+                    (fading ? 'opacity-0' : 'opacity-100')
+                  }
+                />
               ) : (
                 <div className="w-full h-full animate-pulse bg-gradient-to-br from-[#1b2838] via-[#22344a] to-[#1b2838]" />
               )}
@@ -86,7 +102,7 @@ export default function ProductDetail() {
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveIndex(idx)}
+                    onClick={() => changeImage(() => idx)}
                     className={
                       'w-24 h-14 rounded overflow-hidden border-2 shrink-0 ' +
                       (activeIndex === idx ? 'border-[#66c0f4]' : 'border-transparent opacity-70 hover:opacity-100')
@@ -128,6 +144,8 @@ export default function ProductDetail() {
                 </div>
               )}
             </div>
+
+            <MoreLikeThis excludeId={product.id} />
           </div>
 
           <div className="bg-[#16202d]/90 border border-[#2a3f5a] rounded p-5 h-fit">
@@ -159,7 +177,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Theater mode overlay */}
       {theaterOpen && (
         <div
           className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
@@ -182,7 +199,10 @@ export default function ProductDetail() {
           <img
             src={activeImage}
             alt={product.title}
-            className="max-w-[90vw] max-h-[85vh] object-contain"
+            className={
+              'max-w-[90vw] max-h-[85vh] object-contain transition-opacity duration-150 ' +
+              (fading ? 'opacity-0' : 'opacity-100')
+            }
             onClick={(e) => e.stopPropagation()}
           />
 
