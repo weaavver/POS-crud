@@ -18,30 +18,62 @@ function usePerView() {
   return wide ? 2 : 1;
 }
 
+const SLIDE_MS = 300;
+
 export default function DiscountedGames() {
   const { deals, ready } = useDeals();
   const [products, setProducts] = useState([]);
-  const [offset, setOffset] = useState(0);
+  // Which game is first in view. It's briefly -1 or n while sliding onto the
+  // copies at either end, then jumps back to the matching real card.
+  const [index, setIndex] = useState(0);
+  const [animate, setAnimate] = useState(true);
+  const busy = useRef(false); // ignore clicks while a slide is running
+  const timer = useRef(null);
   const perView = usePerView();
 
   useEffect(() => {
     getProducts().then(setProducts);
   }, []);
 
+  useEffect(() => () => clearTimeout(timer.current), []);
+
   if (!ready) return null;
   const dealIds = Object.keys(deals);
   const dealProducts = products.filter((p) => dealIds.includes(p.id));
   if (dealProducts.length === 0) return null;
 
-  // The row slides one card at a time. The last position always still shows a
-  // full row of cards, so there's never an empty half when the count is odd.
-  const maxOffset = Math.max(0, dealProducts.length - perView);
-  const current = Math.min(offset, maxOffset);
-  const canSlide = maxOffset > 0;
+  const n = dealProducts.length;
+  const canSlide = n > perView;
+  const current = canSlide && index >= -1 && index <= n ? index : 0;
 
-  // At either end the arrow rewinds to the other end
-  const goPrev = () => setOffset(current === 0 ? maxOffset : current - 1);
-  const goNext = () => setOffset(current >= maxOffset ? 0 : current + 1);
+  const slideTo = (target) => {
+    if (busy.current || target === current) return;
+    busy.current = true;
+    setAnimate(true);
+    setIndex(target);
+    timer.current = setTimeout(() => {
+      // If we slid onto a copy at either end, jump (no animation) to the real
+      // card that looks identical. That's what makes the loop seamless.
+      setAnimate(false);
+      setIndex((i) => (i >= n ? i - n : i < 0 ? i + n : i));
+      busy.current = false;
+    }, SLIDE_MS);
+  };
+
+  const goPrev = () => slideTo(current - 1);
+  const goNext = () => slideTo(current + 1);
+
+  // Track = copies of the last cards + all cards + copies of the first cards
+  const slides = canSlide
+    ? [
+        ...dealProducts.slice(-perView).map((g) => ({ game: g, key: 'pre-' + g.id })),
+        ...dealProducts.map((g) => ({ game: g, key: g.id })),
+        ...dealProducts.slice(0, perView).map((g) => ({ game: g, key: 'post-' + g.id })),
+      ]
+    : dealProducts.map((g) => ({ game: g, key: g.id }));
+
+  const trackPosition = current + (canSlide ? perView : 0);
+  const activeDot = ((current % n) + n) % n;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -53,13 +85,16 @@ export default function DiscountedGames() {
         <div className="overflow-hidden">
           {/* -mx-2 + px-2 on each card gives the 16px gap without breaking the slide maths */}
           <div
-            className="flex -mx-2 transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${current * (100 / perView)}%)` }}
+            className="flex -mx-2"
+            style={{
+              transform: `translateX(-${trackPosition * (100 / perView)}%)`,
+              transition: animate ? `transform ${SLIDE_MS}ms ease-out` : 'none',
+            }}
           >
-            {dealProducts.map((game) => {
+            {slides.map(({ game, key }) => {
               const { percent, discountedPrice } = getDiscountedPrice(game, deals);
               return (
-                <div key={game.id} className="w-full sm:w-1/2 shrink-0 px-2">
+                <div key={key} className="w-full sm:w-1/2 shrink-0 px-2">
                   <DealCard game={game} percent={percent} discountedPrice={discountedPrice} />
                 </div>
               );
@@ -77,14 +112,14 @@ export default function DiscountedGames() {
 
       {canSlide && (
         <div className="flex justify-center gap-1.5 mt-4">
-          {Array.from({ length: maxOffset + 1 }).map((_, idx) => (
+          {Array.from({ length: n }).map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setOffset(idx)}
-              aria-label={'Show offers from ' + (idx + 1)}
+              onClick={() => slideTo(idx)}
+              aria-label={'Show offer ' + (idx + 1)}
               className={
                 'h-1 w-8 rounded-full transition-colors duration-300 ' +
-                (idx === current ? 'bg-[#66c0f4]' : 'bg-[#3a4a5c] hover:bg-[#4d6178]')
+                (idx === activeDot ? 'bg-[#66c0f4]' : 'bg-[#3a4a5c] hover:bg-[#4d6178]')
               }
             />
           ))}
