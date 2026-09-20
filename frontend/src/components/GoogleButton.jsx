@@ -47,6 +47,7 @@ export default function GoogleButton({ onCredential }) {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: (response) => onCredential(response.credential),
+	locale: 'en',
       });
 
       // Clear before rendering in case of a fast remount (e.g. React StrictMode).
