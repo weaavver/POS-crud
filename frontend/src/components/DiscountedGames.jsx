@@ -3,14 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../api/products';
 import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
-// How many cards fit side by side: 1 on phones, 2 on tablets, 3 on desktop
-// (matches Tailwind's `sm` and `lg` breakpoints)
-const WIDE_QUERY = '(min-width: 64rem)';
-const MEDIUM_QUERY = '(min-width: 40rem)';
+// How many cards fit side by side: 1 on phones, 3 on tablets and up
+// (matches Tailwind's `sm` breakpoint)
+const WIDE_QUERY = '(min-width: 40rem)';
 
 function countPerView() {
   if (window.matchMedia(WIDE_QUERY).matches) return 3;
-  if (window.matchMedia(MEDIUM_QUERY).matches) return 2;
   return 1;
 }
 
@@ -18,10 +16,10 @@ function usePerView() {
   const [perView, setPerView] = useState(countPerView);
 
   useEffect(() => {
-    const lists = [WIDE_QUERY, MEDIUM_QUERY].map((q) => window.matchMedia(q));
+    const mql = window.matchMedia(WIDE_QUERY);
     const onChange = () => setPerView(countPerView());
-    lists.forEach((mql) => mql.addEventListener('change', onChange));
-    return () => lists.forEach((mql) => mql.removeEventListener('change', onChange));
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, []);
 
   return perView;
