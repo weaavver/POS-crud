@@ -82,8 +82,8 @@ function DealCard({ game, percent, discountedPrice }) {
 
       <div className="p-3 flex items-center justify-between">
         <p className="text-sm text-white font-medium truncate pr-2">{game.title}</p>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="bg-green-500 text-[#171a21] text-xs font-bold px-2 py-1 rounded">
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="bg-green-500 text-[#171a21] text-xl font-bold px-3 py-1.5 rounded">
             -{percent}%
           </span>
           <div className="flex flex-col items-end">

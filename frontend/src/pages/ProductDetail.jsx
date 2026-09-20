@@ -157,7 +157,7 @@ export default function ProductDetail() {
               <button
                 onClick={handleAddToCart}
                 disabled={inCart}
-                className="mt-4 w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-3 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-4 w-full bg-linear-to-r from-[#75b022] from-5% to-[#588a1b] to-95% text-[#d2efa9] font-semibold rounded-sm py-3 enabled:hover:from-[#8ed629] enabled:hover:to-[#6aa621] enabled:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {inCart ? 'Already in Cart' : 'Add to Cart'}
               </button>
