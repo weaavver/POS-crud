@@ -7,11 +7,11 @@ function errorMessage(err, fallback) {
   return err.detail || fallback;
 }
 
-export async function loginRequest(email, password) {
+export async function loginRequest(username, password) {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ username, password }),
   });
   if (!res.ok) {
     const err = await res.json();
@@ -20,11 +20,11 @@ export async function loginRequest(email, password) {
   return res.json();
 }
 
-export async function registerRequest(name, email, password) {
+export async function registerRequest(name, username, email, password) {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, username, email, password }),
   });
   if (!res.ok) {
     const err = await res.json();

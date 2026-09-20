@@ -4,7 +4,7 @@ import { loginRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const data = await loginRequest(email, password);
+      const data = await loginRequest(username, password);
       login(data.access_token, data.user);
       if (from) {
         navigate(from, { replace: true });
@@ -51,11 +51,11 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-[#c7d5e0] mb-1">Email</label>
+            <label className="block text-sm text-[#c7d5e0] mb-1">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className={inputClass}
             />

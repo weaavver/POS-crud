@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -26,7 +27,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const data = await registerRequest(name, email, password);
+      const data = await registerRequest(name, username, email, password);
       // Backend returns a token, so the new customer is logged in right away
       login(data.access_token, data.user);
       navigate(from || '/', { replace: true });
@@ -59,6 +60,20 @@ export default function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#c7d5e0] mb-1">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              minLength={3}
+              maxLength={20}
+              pattern="[a-zA-Z0-9_]+"
+              title="Letters, numbers, and underscores only"
               className={inputClass}
             />
           </div>
