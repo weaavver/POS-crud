@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
 
@@ -8,14 +9,15 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeImage, setActiveImage] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [theaterOpen, setTheaterOpen] = useState(false);
   const { addItem, items } = useCart();
 
   useEffect(() => {
     getProduct(id)
       .then((data) => {
         setProduct(data);
-        setActiveImage(data.gallery_images?.[0] || data.cover_image);
+        setActiveIndex(0);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -27,10 +29,13 @@ export default function ProductDetail() {
 
   const inCart = items.some((i) => i.id === product.id);
   const allImages = (product.gallery_images || []).filter(Boolean);
+  const activeImage = allImages[activeIndex] || product.cover_image;
+
+  const goPrev = () => setActiveIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  const goNext = () => setActiveIndex((prev) => (prev + 1) % allImages.length);
 
   return (
     <div className="relative">
-      {/* Blurred cover backdrop */}
       {product.cover_image && (
         <div
           className="absolute inset-0 h-[600px] bg-cover bg-center opacity-25 blur-md scale-110"
@@ -46,13 +51,33 @@ export default function ProductDetail() {
         <p className="text-[#8f98a0] mt-1">{product.platform}</p>
 
         <div className="grid md:grid-cols-[1fr_320px] gap-6 mt-6">
-          {/* Main gallery — dominant focus */}
           <div>
-            <div className="aspect-video bg-[#0e1621] border border-[#2a3f5a] rounded overflow-hidden flex items-center justify-center">
+            {/* Main gallery viewer with hover arrows */}
+            <div
+              className="relative group aspect-video bg-[#0e1621] border border-[#2a3f5a] rounded overflow-hidden flex items-center justify-center cursor-pointer"
+              onClick={() => allImages.length > 0 && setTheaterOpen(true)}
+            >
               {activeImage ? (
                 <img src={activeImage} alt={product.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full animate-pulse bg-gradient-to-br from-[#1b2838] via-[#22344a] to-[#1b2838]" />
+              )}
+
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goNext(); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
               )}
             </div>
 
@@ -61,10 +86,10 @@ export default function ProductDetail() {
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveImage(img)}
+                    onClick={() => setActiveIndex(idx)}
                     className={
                       'w-24 h-14 rounded overflow-hidden border-2 shrink-0 ' +
-                      (activeImage === img ? 'border-[#66c0f4]' : 'border-transparent opacity-70 hover:opacity-100')
+                      (activeIndex === idx ? 'border-[#66c0f4]' : 'border-transparent opacity-70 hover:opacity-100')
                     }
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -105,7 +130,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Side info panel — Steam-style purchase box */}
           <div className="bg-[#16202d]/90 border border-[#2a3f5a] rounded p-5 h-fit">
             {product.cover_image && (
               <img
@@ -134,6 +158,42 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Theater mode overlay */}
+      {theaterOpen && (
+        <div
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+          onClick={() => setTheaterOpen(false)}
+        >
+          <button
+            onClick={() => setTheaterOpen(false)}
+            className="absolute top-4 right-4 text-white hover:text-[#66c0f4] transition-colors"
+          >
+            <X size={32} />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); goPrev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3"
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          <img
+            src={activeImage}
+            alt={product.title}
+            className="max-w-[90vw] max-h-[85vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <button
+            onClick={(e) => { e.stopPropagation(); goNext(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3"
+          >
+            <ChevronRight size={32} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
