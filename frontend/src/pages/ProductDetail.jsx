@@ -26,7 +26,7 @@ export default function ProductDetail() {
   if (!product) return null;
 
   const inCart = items.some((i) => i.id === product.id);
-  const allImages = [product.cover_image, ...(product.gallery_images || [])].filter(Boolean);
+  const allImages = (product.gallery_images || []).filter(Boolean);
 
   return (
     <div className="relative">
