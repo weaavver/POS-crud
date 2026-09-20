@@ -3,13 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../api/products';
 import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
-const PER_PAGE = 2;
+// How many cards fit side by side (matches Tailwind's `sm` breakpoint)
+function usePerView() {
+  const query = '(min-width: 40rem)';
+  const [wide, setWide] = useState(() => window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = (e) => setWide(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
+  return wide ? 2 : 1;
+}
 
 export default function DiscountedGames() {
   const { deals, ready } = useDeals();
   const [products, setProducts] = useState([]);
-  const [page, setPage] = useState(0);
-  const [fading, setFading] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const perView = usePerView();
 
   useEffect(() => {
     getProducts().then(setProducts);
@@ -20,21 +33,15 @@ export default function DiscountedGames() {
   const dealProducts = products.filter((p) => dealIds.includes(p.id));
   if (dealProducts.length === 0) return null;
 
-  const totalPages = Math.ceil(dealProducts.length / PER_PAGE);
-  // If games were removed from sale while on a later page, fall back to the last one
-  const currentPage = Math.min(page, totalPages - 1);
-  const visible = dealProducts.slice(currentPage * PER_PAGE, currentPage * PER_PAGE + PER_PAGE);
+  // The row slides one card at a time. The last position always still shows a
+  // full row of cards, so there's never an empty half when the count is odd.
+  const maxOffset = Math.max(0, dealProducts.length - perView);
+  const current = Math.min(offset, maxOffset);
+  const canSlide = maxOffset > 0;
 
-  const changePage = (newPage) => {
-    setFading(true);
-    setTimeout(() => {
-      setPage(newPage);
-      setFading(false);
-    }, 150);
-  };
-
-  const goPrev = () => changePage((currentPage - 1 + totalPages) % totalPages);
-  const goNext = () => changePage((currentPage + 1) % totalPages);
+  // At either end the arrow rewinds to the other end
+  const goPrev = () => setOffset(current === 0 ? maxOffset : current - 1);
+  const goNext = () => setOffset(current >= maxOffset ? 0 : current + 1);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -43,21 +50,24 @@ export default function DiscountedGames() {
       </h2>
 
       <div className="relative">
-        <div
-          className={
-            'grid grid-cols-1 sm:grid-cols-2 gap-4 transition-opacity duration-150 ' +
-            (fading ? 'opacity-0' : 'opacity-100')
-          }
-        >
-          {visible.map((game) => {
-            const { percent, discountedPrice } = getDiscountedPrice(game, deals);
-            return (
-              <DealCard key={game.id} game={game} percent={percent} discountedPrice={discountedPrice} />
-            );
-          })}
+        <div className="overflow-hidden">
+          {/* -mx-2 + px-2 on each card gives the 16px gap without breaking the slide maths */}
+          <div
+            className="flex -mx-2 transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${current * (100 / perView)}%)` }}
+          >
+            {dealProducts.map((game) => {
+              const { percent, discountedPrice } = getDiscountedPrice(game, deals);
+              return (
+                <div key={game.id} className="w-full sm:w-1/2 shrink-0 px-2">
+                  <DealCard game={game} percent={percent} discountedPrice={discountedPrice} />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {totalPages > 1 && (
+        {canSlide && (
           <>
             <CarouselArrow direction="left" onClick={goPrev} />
             <CarouselArrow direction="right" onClick={goNext} />
@@ -65,16 +75,16 @@ export default function DiscountedGames() {
         )}
       </div>
 
-      {totalPages > 1 && (
+      {canSlide && (
         <div className="flex justify-center gap-1.5 mt-4">
-          {Array.from({ length: totalPages }).map((_, idx) => (
+          {Array.from({ length: maxOffset + 1 }).map((_, idx) => (
             <button
               key={idx}
-              onClick={() => changePage(idx)}
-              aria-label={'Offers page ' + (idx + 1)}
+              onClick={() => setOffset(idx)}
+              aria-label={'Show offers from ' + (idx + 1)}
               className={
                 'h-1 w-8 rounded-full transition-colors duration-300 ' +
-                (idx === currentPage ? 'bg-[#66c0f4]' : 'bg-[#3a4a5c] hover:bg-[#4d6178]')
+                (idx === current ? 'bg-[#66c0f4]' : 'bg-[#3a4a5c] hover:bg-[#4d6178]')
               }
             />
           ))}
@@ -141,7 +151,7 @@ function DealCard({ game, percent, discountedPrice }) {
       onClick={() => navigate(`/products/${game.id}`)}
       onMouseEnter={startCycling}
       onMouseLeave={stopCycling}
-      className="text-left bg-[#0e1621] border border-[#2a3f5a] overflow-hidden"
+      className="block w-full text-left bg-[#0e1621] border border-[#2a3f5a] overflow-hidden"
     >
       <div className="relative aspect-[460/215] bg-[#1b2838] overflow-hidden">
         {hasImage ? (
