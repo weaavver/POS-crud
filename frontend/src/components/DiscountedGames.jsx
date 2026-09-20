@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../api/products';
 import { useDeals, getDiscountedPrice } from '../context/DealsContext';
@@ -35,16 +35,51 @@ export default function DiscountedGames() {
 
 function DealCard({ game, percent, discountedPrice }) {
   const navigate = useNavigate();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const intervalRef = useRef(null);
+
+  const images = [game.cover_image, ...(game.gallery_images || [])].filter(Boolean);
+  const hasImage = images.length > 0;
+
+  const startCycling = () => {
+    if (images.length <= 1) return;
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % images.length);
+    }, 1500);
+  };
+
+  const stopCycling = () => {
+    clearInterval(intervalRef.current);
+    setActiveIndex(0);
+  };
+
   return (
     <button
       onClick={() => navigate(`/products/${game.id}`)}
-      className="text-left bg-[#0e1621] border border-[#2a3f5a] hover:border-[#66c0f4] transition-colors overflow-hidden"
+      onMouseEnter={startCycling}
+      onMouseLeave={stopCycling}
+      className="text-left bg-[#0e1621] border border-[#2a3f5a] overflow-hidden"
     >
-      <div className="aspect-[460/215] bg-[#1b2838]">
-        {game.cover_image && (
-          <img src={game.cover_image} alt={game.title} className="w-full h-full object-cover" />
+      <div className="relative aspect-[460/215] bg-[#1b2838] overflow-hidden">
+        {hasImage ? (
+          images.map((img, idx) => (
+            <img
+              key={img + idx}
+              src={img}
+              alt={game.title}
+              className={
+                'absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ' +
+                (idx === activeIndex ? 'opacity-100' : 'opacity-0')
+              }
+            />
+          ))
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#1b2838]">
+            <div className="w-full h-full animate-pulse bg-gradient-to-br from-[#1b2838] via-[#22344a] to-[#1b2838] bg-[length:200%_200%]" />
+          </div>
         )}
       </div>
+
       <div className="p-3 flex items-center justify-between">
         <p className="text-sm text-white font-medium truncate pr-2">{game.title}</p>
         <div className="flex items-center gap-2 shrink-0">
