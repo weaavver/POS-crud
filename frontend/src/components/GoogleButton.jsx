@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
+const SCRIPT_SRC = 'https://accounts.google.com/gsi/client?hl=en';
 
 // The Google script only needs to be injected into the page once, even if
 // both Login and Register mount a GoogleButton across navigations.
@@ -47,7 +47,6 @@ export default function GoogleButton({ onCredential }) {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: (response) => onCredential(response.credential),
-	locale: 'en',
       });
 
       // Clear before rendering in case of a fast remount (e.g. React StrictMode).
