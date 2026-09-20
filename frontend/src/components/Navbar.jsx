@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, User, ShoppingCart, LogOut, Menu, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 
 const navLinks = [
@@ -17,6 +18,14 @@ export default function Navbar() {
   const linkRefs = useRef([]);
   const { items } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -80,6 +89,16 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+            {user && (
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                aria-label="Sign out"
+                className="text-[#c7d5e0] hover:text-white transition-colors"
+              >
+                <LogOut size={20} />
+              </button>
+            )}
           </div>
 
           <button className="md:hidden text-[#c7d5e0]" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -103,6 +122,11 @@ export default function Navbar() {
             <Link to="/cart">
               <ShoppingCart size={20} className="text-[#c7d5e0]" />
             </Link>
+            {user && (
+              <button onClick={handleLogout} aria-label="Sign out">
+                <LogOut size={20} className="text-[#c7d5e0]" />
+              </button>
+            )}
           </div>
         </div>
       )}
