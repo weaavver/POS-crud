@@ -126,7 +126,7 @@ export default function ProductDetail() {
                 />
               )}
 
-              <p className="text-3xl font-bold text-[#66c0f4]">${product.price.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-white">${product.price.toFixed(2)}</p>
 
               <button
                 onClick={() => addItem(product)}

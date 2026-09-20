@@ -13,10 +13,12 @@ import OrderConfirmation from './pages/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory';
 import NewReleases from './pages/NewReleases';
 import About from './pages/About';
+import DiscountedGames from './components/DiscountedGames';
 
 function Home() {
   return (
     <>
+      <DiscountedGames />
       <ProductGrid />
     </>
   );

@@ -69,7 +69,7 @@ export default function MoreLikeThis({ excludeId }) {
               </div>
               <div className="p-2">
                 <p className="text-xs text-white truncate">{item.title}</p>
-                <p className="text-xs text-[#66c0f4] font-semibold mt-1">
+                <p className="text-xs text-white font-semibold mt-1">
                   {item.price === 0 ? 'FREE' : `$${item.price.toFixed(2)}`}
                 </p>
               </div>

@@ -62,7 +62,7 @@ export default function ProductCard({ product }) {
             {product.title}
           </h3>
           <p className="text-xs text-[#8f98a0] mt-1">{product.platform}</p>
-          <p className="text-[#66c0f4] font-bold mt-2">${product.price.toFixed(2)}</p>
+          <p className="text-white font-bold mt-2">${product.price.toFixed(2)}</p>
         </div>
       </Link>
     </div>

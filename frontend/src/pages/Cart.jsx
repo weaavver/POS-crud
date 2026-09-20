@@ -47,7 +47,7 @@ export default function Cart() {
               <p className="text-white font-medium">{item.title}</p>
               <p className="text-xs text-[#8f98a0]">{item.platform}</p>
             </div>
-            <p className="text-[#66c0f4] font-bold">${item.price.toFixed(2)}</p>
+            <p className="text-white font-bold">${item.price.toFixed(2)}</p>
             <button
               onClick={() => handleRemove(item.id)}
               className="text-red-400 hover:text-red-300 text-sm font-medium ml-2"
@@ -60,7 +60,7 @@ export default function Cart() {
 
       <div className="mt-6 border-t border-[#2a3f5a] pt-4 flex items-center justify-between">
         <p className="text-lg text-[#c7d5e0]">Total</p>
-        <p className="text-2xl font-bold text-[#66c0f4]">${total.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-white">${total.toFixed(2)}</p>
       </div>
 
       <button

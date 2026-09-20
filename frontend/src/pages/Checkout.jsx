@@ -55,7 +55,7 @@ export default function Checkout() {
         ))}
         <div className="border-t border-[#2a3f5a] pt-3 flex justify-between font-bold">
           <span className="text-white">Total</span>
-          <span className="text-[#66c0f4]">${total.toFixed(2)}</span>
+          <span className="text-white">${total.toFixed(2)}</span>
         </div>
       </div>
 
