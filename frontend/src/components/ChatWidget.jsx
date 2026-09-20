@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, FileDown } from 'lucide-react';
 import { sendChatMessage } from '../api/assistant';
+import { useAuth } from '../context/AuthContext';
 
 const GREETING = {
   role: 'assistant',
@@ -31,7 +32,27 @@ function renderWithLinks(text) {
   );
 }
 
+const DOCX_MIME =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+function downloadReport(report) {
+  const byteChars = atob(report.content_base64);
+  const bytes = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+
+  const blob = new Blob([bytes], { type: DOCX_MIME });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = report.filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function ChatWidget() {
+  const { user, token } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState('');
@@ -61,10 +82,11 @@ export default function ChatWidget() {
     setSending(true);
 
     try {
-      // Don't send the initial greeting as if the assistant said it mid-conversation.
-      const history = nextMessages.slice(1, -1);
-      const { reply } = await sendChatMessage(text, history);
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      // Don't send the initial greeting as if the assistant said it mid-conversation,
+      // and never resend a previous report's base64 data — only role/content matter.
+      const history = nextMessages.slice(1, -1).map(({ role, content }) => ({ role, content }));
+      const { reply, report } = await sendChatMessage(text, history, token);
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply, report }]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,6 +110,11 @@ export default function ChatWidget() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-white font-semibold text-sm">Vault Shopping Assistant</span>
+              {user?.role === 'admin' && (
+                <span className="text-[10px] uppercase tracking-wide bg-[#2a3f5a] text-[#66c0f4] px-1.5 py-0.5 rounded">
+                  Admin
+                </span>
+              )}
             </div>
             <button
               onClick={() => setOpen(false)}
@@ -113,6 +140,15 @@ export default function ChatWidget() {
                   }`}
                 >
                   {renderWithLinks(m.content)}
+                  {m.report && (
+                    <button
+                      onClick={() => downloadReport(m.report)}
+                      className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#66c0f4] hover:text-[#7fd0ff] transition-colors"
+                    >
+                      <FileDown size={14} />
+                      Download {m.report.filename}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
