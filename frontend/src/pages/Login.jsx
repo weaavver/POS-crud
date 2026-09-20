@@ -52,11 +52,11 @@ export default function Login() {
   };
 
   const inputClass =
-    'w-full bg-[#1b2838] border border-[#2a3f5a] rounded px-3 py-2 text-white focus:outline-none focus:border-[#66c0f4]';
+    'w-full bg-[#1b2838] border border-[#2a3f5a] rounded-sm px-3 py-2 text-white focus:outline-none';
 
   return (
     <div className="flex items-center justify-center bg-[#1b2838] px-4 py-16">
-      <div className="w-full max-w-sm bg-[#16202d] border border-[#2a3f5a] rounded-lg p-8">
+      <div className="w-full max-w-sm bg-[#16202d] border border-[#2a3f5a] rounded-sm p-8">
         <h1 className="text-2xl font-bold text-white mb-6">Log in to Vault</h1>
 
         {(error || googleError) && (
@@ -99,7 +99,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-2 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50"
+            className="w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded-sm py-2 hover:bg-[#3d7ea6] transition-colors disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Log In'}
           </button>
