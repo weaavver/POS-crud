@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { loginRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Where the visitor was trying to go before being sent here (set by ProtectedRoute / Add to Cart)
+  const from = location.state?.from?.pathname;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,7 +21,9 @@ export default function Login() {
     try {
       const data = await loginRequest(email, password);
       login(data.access_token, data.user);
-      if (data.user.role === 'admin') {
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/');
@@ -76,7 +81,7 @@ export default function Login() {
 
         <p className="text-sm text-[#8f98a0] mt-6 text-center">
           New here?{' '}
-          <Link to="/register" className="text-[#66c0f4] hover:underline">
+          <Link to="/register" state={location.state} className="text-[#66c0f4] hover:underline">
             Create an account
           </Link>
         </p>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { registerRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,6 +12,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function Register() {
       const data = await registerRequest(name, email, password);
       // Backend returns a token, so the new customer is logged in right away
       login(data.access_token, data.user);
-      navigate('/');
+      navigate(from || '/', { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -103,7 +105,7 @@ export default function Register() {
 
         <p className="text-sm text-[#8f98a0] mt-6 text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#66c0f4] hover:underline">
+          <Link to="/login" state={location.state} className="text-[#66c0f4] hover:underline">
             Log in
           </Link>
         </p>

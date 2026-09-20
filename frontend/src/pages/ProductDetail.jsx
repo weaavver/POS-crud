@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import MoreLikeThis from '../components/MoreLikeThis';
 import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
@@ -16,6 +17,9 @@ export default function ProductDetail() {
   const [theaterOpen, setTheaterOpen] = useState(false);
   const { addItem, items } = useCart();
   const { deals } = useDeals();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     getProduct(id)
@@ -35,6 +39,15 @@ export default function ProductDetail() {
   const finalPrice = deal ? deal.discountedPrice : product.price;
 
   const inCart = items.some((i) => i.id === product.id);
+
+  const handleAddToCart = () => {
+    if (!user) {
+      // Not signed in: go to login, and come back to this product afterwards.
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    addItem({ ...product, price: finalPrice });
+  };
   const allImages = (product.gallery_images || []).filter(Boolean);
   const activeImage = allImages[activeIndex] || product.cover_image;
 
@@ -142,7 +155,7 @@ export default function ProductDetail() {
               <p className="text-3xl font-bold text-white">${finalPrice.toFixed(2)}</p>
 
               <button
-                onClick={() => addItem({ ...product, price: finalPrice })}
+                onClick={handleAddToCart}
                 disabled={inCart}
                 className="mt-4 w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-3 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
