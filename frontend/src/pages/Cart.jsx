@@ -1,9 +1,19 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 export default function Cart() {
   const { items, removeItem, total } = useCart();
   const navigate = useNavigate();
+  const [removingId, setRemovingId] = useState(null);
+
+  const handleRemove = (id) => {
+    setRemovingId(id);
+    setTimeout(() => {
+      removeItem(id);
+      setRemovingId(null);
+    }, 250);
+  };
 
   if (items.length === 0) {
     return (
@@ -23,7 +33,10 @@ export default function Cart() {
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 bg-[#16202d] border border-[#2a3f5a] p-3"
+            className={
+              'flex items-center gap-4 bg-[#16202d] border border-[#2a3f5a] p-3 transition-all duration-250 ease-out overflow-hidden ' +
+              (removingId === item.id ? 'opacity-0 max-h-0 !p-0 !border-0 !mb-0 scale-95' : 'opacity-100 max-h-40')
+            }
           >
             <div className="w-24 h-14 bg-[#1b2838] overflow-hidden shrink-0">
               {item.cover_image && (
@@ -36,7 +49,7 @@ export default function Cart() {
             </div>
             <p className="text-[#66c0f4] font-bold">${item.price.toFixed(2)}</p>
             <button
-              onClick={() => removeItem(item.id)}
+              onClick={() => handleRemove(item.id)}
               className="text-red-400 hover:text-red-300 text-sm font-medium ml-2"
             >
               Remove
