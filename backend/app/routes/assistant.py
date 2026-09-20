@@ -17,6 +17,10 @@ GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_M
 MAX_CATALOG_ITEMS = 150  # keep the prompt small even if the catalog grows
 MAX_HISTORY_TURNS = 8    # only the recent back-and-forth matters for context
 
+# Used to build a real, clickable product page link for each catalog item.
+# Falls back to the known production frontend if FRONTEND_URL isn't set.
+STORE_BASE_URL = os.getenv("FRONTEND_URL", "https://vault-weaavver.vercel.app").rstrip("/")
+
 
 async def _build_catalog_context() -> str:
     """A compact, LLM-readable snapshot of what's actually for sale, so the
@@ -30,9 +34,10 @@ async def _build_catalog_context() -> str:
         desc = (p.get("description") or "").strip().replace("\n", " ")
         if len(desc) > 140:
             desc = desc[:140].rsplit(" ", 1)[0] + "..."
+        link = f"{STORE_BASE_URL}/products/{p['_id']}"
         lines.append(
             f"- {p.get('type', 'item')} | \"{p.get('title', 'Untitled')}\" "
-            f"| ${p.get('price', 0):.2f} | {p.get('platform', 'N/A')} | {desc}"
+            f"| ${p.get('price', 0):.2f} | {p.get('platform', 'N/A')} | {desc} | link: {link}"
         )
     return "\n".join(lines) if lines else "(the catalog is currently empty)"
 
@@ -45,6 +50,9 @@ def _system_prompt(catalog: str) -> str:
         "- Only recommend or mention products that appear in the CATALOG below. Never "
         "invent titles, prices, or platforms that aren't listed there.\n"
         "- Catalog prices are current and authoritative — never guess or estimate a price.\n"
+        "- Each catalog entry includes a real product page link. When a visitor asks for a "
+        "link, wants to buy something, or would clearly benefit from one, share that exact "
+        "link verbatim (don't shorten, alter, or invent one).\n"
         "- If nothing in the catalog matches what the visitor wants, say so honestly and "
         "either suggest the closest alternatives from the catalog or say there isn't a "
         "good match right now.\n"

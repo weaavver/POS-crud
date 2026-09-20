@@ -7,6 +7,30 @@ const GREETING = {
   content: "Hi! I'm the Vault shopping assistant. Looking for a game?",
 };
 
+const URL_SPLIT_PATTERN = /(https?:\/\/[^\s]+)/g;
+const URL_TEST_PATTERN = /^https?:\/\//;
+
+// The assistant replies in plain text, but product links need to actually be
+// clickable rather than inert strings the user has to copy by hand.
+function renderWithLinks(text) {
+  const parts = text.split(URL_SPLIT_PATTERN);
+  return parts.map((part, i) =>
+    URL_TEST_PATTERN.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#66c0f4] underline hover:text-[#7fd0ff] break-all"
+      >
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([GREETING]);
@@ -88,7 +112,7 @@ export default function ChatWidget() {
                       : 'bg-[#1b2838] text-[#c7d5e0] border border-[#2a3f5a]'
                   }`}
                 >
-                  {m.content}
+                  {renderWithLinks(m.content)}
                 </div>
               </div>
             ))}
