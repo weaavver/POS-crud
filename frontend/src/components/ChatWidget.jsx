@@ -96,14 +96,14 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 font-chat">
+    <div className="pointer-events-none fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 font-chat">
       {/* Always mounted (just hidden when closed) so it can animate in AND out. */}
       <div
         aria-hidden={!open}
         className={
           'w-[340px] sm:w-[380px] h-[480px] max-h-[75vh] bg-[#16202d] border border-[#2a3f5a] rounded-sm shadow-2xl flex flex-col overflow-hidden ' +
           'origin-bottom-right transition-[opacity,translate,scale,visibility] duration-200 ease-out motion-reduce:transition-none ' +
-          (open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-95 invisible')
+          (open ? 'pointer-events-auto opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-95 invisible')
         }
       >
         {/* Header */}
@@ -197,7 +197,7 @@ export default function ChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative w-14 h-14 rounded-sm bg-[#66c0f4] text-[#171a21] shadow-lg cursor-pointer hover:bg-[#7fd0ff] hover:scale-105 active:scale-95 transition-[background-color,scale] duration-200 motion-reduce:transition-none"
+        className="pointer-events-auto relative w-14 h-14 rounded-sm bg-[#66c0f4] text-[#171a21] shadow-lg cursor-pointer hover:bg-[#7fd0ff] hover:scale-105 active:scale-95 transition-[background-color,scale] duration-200 motion-reduce:transition-none"
         aria-label={open ? 'Close shopping assistant' : 'Open shopping assistant'}
       >
         {/* Both icons stay mounted and crossfade + spin into each other. */}
