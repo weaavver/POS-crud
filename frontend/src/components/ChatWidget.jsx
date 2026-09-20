@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, FileDown } from 'lucide-react';
+import { MessageCircle, X, Minus, Send, FileDown } from 'lucide-react';
 import { sendChatMessage } from '../api/assistant';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,7 +22,7 @@ function renderWithLinks(text) {
         href={part}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#66c0f4] underline hover:text-[#7fd0ff] break-all"
+        className="text-blue-400 underline hover:text-blue-300 break-all"
       >
         {part}
       </a>
@@ -104,14 +104,14 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="w-[340px] sm:w-[380px] h-[480px] max-h-[75vh] bg-[#16202d] border border-[#2a3f5a] rounded-lg shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-[340px] sm:w-[380px] h-[480px] max-h-[75vh] bg-[#16202d] border border-[#2a3f5a] rounded-sm shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-[#1b2838] border-b border-[#2a3f5a]">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-white font-semibold text-sm">Vault Shopping Assistant</span>
               {user?.role === 'admin' && (
-                <span className="text-[10px] uppercase tracking-wide bg-[#2a3f5a] text-[#66c0f4] px-1.5 py-0.5 rounded">
+                <span className="text-[10px] uppercase tracking-wide bg-[#2a3f5a] text-[#66c0f4] px-1.5 py-0.5 rounded-sm">
                   Admin
                 </span>
               )}
@@ -119,9 +119,9 @@ export default function ChatWidget() {
             <button
               onClick={() => setOpen(false)}
               className="text-[#8f98a0] hover:text-white transition-colors"
-              aria-label="Close chat"
+              aria-label="Minimize chat"
             >
-              <X size={18} />
+              <Minus size={18} />
             </button>
           </div>
 
@@ -133,17 +133,17 @@ export default function ChatWidget() {
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] rounded-sm px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                     m.role === 'user'
                       ? 'bg-[#66c0f4] text-[#171a21]'
-                      : 'bg-[#1b2838] text-[#c7d5e0] border border-[#2a3f5a]'
+                      : 'bg-[#1b2838] text-white border border-[#2a3f5a]'
                   }`}
                 >
                   {renderWithLinks(m.content)}
                   {m.report && (
                     <button
                       onClick={() => downloadReport(m.report)}
-                      className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#66c0f4] hover:text-[#7fd0ff] transition-colors"
+                      className="mt-2 flex items-center gap-1.5 text-xs font-medium text-blue-400 underline hover:text-blue-300 transition-colors"
                     >
                       <FileDown size={14} />
                       Download {m.report.filename}
@@ -154,7 +154,7 @@ export default function ChatWidget() {
             ))}
             {sending && (
               <div className="flex justify-start">
-                <div className="bg-[#1b2838] border border-[#2a3f5a] rounded-lg px-3 py-2 text-sm text-[#8f98a0]">
+                <div className="bg-[#1b2838] border border-[#2a3f5a] rounded-sm px-3 py-2 text-sm text-[#8f98a0]">
                   <span className="inline-flex gap-1">
                     <span className="animate-bounce [animation-delay:-0.3s]">.</span>
                     <span className="animate-bounce [animation-delay:-0.15s]">.</span>
@@ -178,12 +178,12 @@ export default function ChatWidget() {
               onKeyDown={handleKeyDown}
               placeholder="What are you looking for?"
               rows={1}
-              className="flex-1 resize-none bg-[#1b2838] border border-[#2a3f5a] rounded px-3 py-2 text-sm text-white placeholder:text-[#8f98a0] focus:outline-none focus:border-[#66c0f4]"
+              className="flex-1 resize-none bg-[#1b2838] border border-[#2a3f5a] rounded-sm px-3 py-2 text-sm text-white placeholder:text-[#8f98a0] focus:outline-none focus:border-[#2a3f5a]"
             />
             <button
               onClick={handleSend}
               disabled={sending || !input.trim()}
-              className="bg-[#66c0f4] text-[#171a21] rounded p-2 hover:bg-[#7fd0ff] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-[#66c0f4] text-[#171a21] rounded-sm p-2 hover:bg-[#7fd0ff] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="Send message"
             >
               <Send size={16} />
@@ -197,7 +197,7 @@ export default function ChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-14 h-14 rounded-full bg-[#66c0f4] text-[#171a21] flex items-center justify-center shadow-lg hover:bg-[#7fd0ff] transition-colors"
+        className="w-14 h-14 rounded-sm bg-[#66c0f4] text-[#171a21] flex items-center justify-center shadow-lg hover:bg-[#7fd0ff] transition-colors"
         aria-label={open ? 'Close shopping assistant' : 'Open shopping assistant'}
       >
         {open ? <X size={24} /> : <MessageCircle size={24} />}
