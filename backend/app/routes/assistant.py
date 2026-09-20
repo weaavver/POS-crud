@@ -276,7 +276,11 @@ async def chat(payload: ChatRequest, is_admin: bool = Depends(get_optional_admin
 
         # Feed the real result back so Gemini can phrase a normal reply —
         # it never sees or handles the file bytes itself.
-        contents.append({"role": "model", "parts": [{"functionCall": function_call}]})
+        # Echo back the model's turn exactly as Gemini sent it. Gemini 3 attaches a
+        # `thoughtSignature` to the functionCall part, and rebuilding the part by hand
+        # (functionCall only) drops it, which makes the follow-up request fail with
+        # "Function call is missing a thought_signature".
+        contents.append(data["candidates"][0]["content"])
         contents.append(
             {
                 "role": "user",
