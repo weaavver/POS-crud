@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { registerRequest } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
+import GoogleButton from '../components/GoogleButton';
+import GoogleUsernamePrompt from '../components/GoogleUsernamePrompt';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -15,6 +18,17 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname;
+
+  const goAfterAuth = () => navigate(from || '/', { replace: true });
+
+  const {
+    pendingGoogle,
+    googleError,
+    googleLoading,
+    handleCredential,
+    submitUsername,
+    cancelPendingGoogle,
+  } = useGoogleAuth(goAfterAuth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +44,7 @@ export default function Register() {
       const data = await registerRequest(name, username, email, password);
       // Backend returns a token, so the new customer is logged in right away
       login(data.access_token, data.user);
-      navigate(from || '/', { replace: true });
+      goAfterAuth(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -46,11 +60,21 @@ export default function Register() {
       <div className="w-full max-w-sm bg-[#16202d] border border-[#2a3f5a] rounded-lg p-8">
         <h1 className="text-2xl font-bold text-white mb-6">Create your Vault account</h1>
 
-        {error && (
+        {(error || googleError) && (
           <div className="bg-red-900/30 border border-red-700 text-red-300 text-sm rounded px-3 py-2 mb-4">
-            {error}
+            {error || googleError}
           </div>
         )}
+
+        {pendingGoogle ? (
+          <GoogleUsernamePrompt
+            pendingGoogle={pendingGoogle}
+            loading={googleLoading}
+            onSubmit={submitUsername}
+            onCancel={cancelPendingGoogle}
+          />
+        ) : (
+          <>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -118,12 +142,22 @@ export default function Register() {
           </button>
         </form>
 
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px flex-1 bg-[#2a3f5a]" />
+          <span className="text-xs text-[#8f98a0]">OR</span>
+          <div className="h-px flex-1 bg-[#2a3f5a]" />
+        </div>
+
+        <GoogleButton onCredential={handleCredential} />
+
         <p className="text-sm text-[#8f98a0] mt-6 text-center">
           Already have an account?{' '}
           <Link to="/login" state={location.state} className="text-[#66c0f4] hover:underline">
             Log in
           </Link>
         </p>
+        </>
+        )}
       </div>
     </div>
   );

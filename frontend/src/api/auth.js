@@ -32,3 +32,19 @@ export async function registerRequest(name, username, email, password) {
   }
   return res.json();
 }
+
+// `credential` is the ID token Google's button hands back.
+// `username` is only sent on the second call, once a brand-new Google user
+// has picked one — the backend replies { needs_username: true, ... } first.
+export async function googleAuthRequest(credential, username) {
+  const res = await fetch(`${API_URL}/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential, username }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(errorMessage(err, 'Google sign-in failed'));
+  }
+  return res.json();
+}
