@@ -6,6 +6,7 @@ from typing import List
 
 from app.database import orders_collection, products_collection
 from app.models.order import OrderCreate, OrderOut, OrderItem
+from app.routes.deals import apply_discount, get_deal_percents
 from app.utils.security import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -22,6 +23,10 @@ async def create_order(order: OrderCreate, current_user: dict = Depends(get_curr
     if not order.product_ids:
         raise HTTPException(status_code=400, detail="Cannot place an empty order")
 
+    # Prices are always decided here, never taken from the client: the list price
+    # from the database, minus any deal that is running right now.
+    deal_percents = await get_deal_percents()
+
     items = []
     for pid in order.product_ids:
         try:
@@ -33,14 +38,20 @@ async def create_order(order: OrderCreate, current_user: dict = Depends(get_curr
         if not product:
             raise HTTPException(status_code=404, detail=f"Product not found: {pid}")
 
+        canonical_id = str(obj_id)  # deals are keyed by the canonical id string
+        list_price = product["price"]
+        percent = deal_percents.get(canonical_id)
+
         items.append(OrderItem(
-            product_id=pid,
+            product_id=canonical_id,
             title=product["title"],
-            price=product["price"],
+            price=apply_discount(list_price, percent),
+            original_price=list_price if percent else None,
+            discount_percent=percent if percent else None,
             download_url=product["download_url"],
         ))
 
-    total = sum(item.price for item in items)
+    total = round(sum(item.price for item in items), 2)
 
     order_doc = {
         "user_id": str(current_user["_id"]),

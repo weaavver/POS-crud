@@ -41,8 +41,12 @@ export function useDeals() {
 export function getDiscountedPrice(product, deals) {
   const percent = deals?.[product.id];
   if (!percent) return null;
+  // Work in whole cents and round half up, exactly like the backend's
+  // apply_discount(), so the price shown here is the price that gets charged.
+  const cents = Math.round(product.price * 100);
+  const discountedCents = Math.round((cents * (100 - percent)) / 100);
   return {
     percent,
-    discountedPrice: product.price * (1 - percent / 100),
+    discountedPrice: discountedCents / 100,
   };
 }

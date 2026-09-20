@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 export default function Cart() {
-  const { items, removeItem, total } = useCart();
+  const { items, removeItem, total, loading, error } = useCart();
   const navigate = useNavigate();
   const [removingId, setRemovingId] = useState(null);
 
@@ -14,6 +14,18 @@ export default function Cart() {
       setRemovingId(null);
     }, 250);
   };
+
+  if (loading) {
+    return <p className="text-[#8f98a0] px-4 py-10 max-w-3xl mx-auto">Loading your cart...</p>;
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <p className="text-red-400 px-4 py-10 max-w-3xl mx-auto">
+        Couldn't load your cart. Please refresh the page.
+      </p>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -47,7 +59,12 @@ export default function Cart() {
               <p className="text-white font-medium">{item.title}</p>
               <p className="text-xs text-[#8f98a0]">{item.platform}</p>
             </div>
-            <p className="text-white font-bold">${item.price.toFixed(2)}</p>
+            <div className="text-right">
+              {item.discountPercent && (
+                <p className="text-xs text-[#8f98a0] line-through">${item.listPrice.toFixed(2)}</p>
+              )}
+              <p className="text-white font-bold">${item.price.toFixed(2)}</p>
+            </div>
             <button
               onClick={() => handleRemove(item.id)}
               className="text-red-400 hover:text-red-300 text-sm font-medium ml-2"

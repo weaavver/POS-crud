@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, ROUND_HALF_UP
 import random
 
 from app.database import products_collection, deals_collection, manual_deals_collection
@@ -13,6 +14,24 @@ router = APIRouter(prefix="/deals", tags=["deals"])
 DEAL_DURATION_HOURS = 24
 PERCENT_OPTIONS = [10, 20, 30, 40, 50, 60, 70]
 DAILY_DEAL_COUNT = 2
+
+
+def apply_discount(price: float, percent) -> float:
+    """The price after a percentage discount, rounded to whole cents.
+
+    This is the ONE place the sale price is calculated on the server: orders and
+    the shopping assistant both use it. The frontend mirrors the same rounding
+    (see getDiscountedPrice in DealsContext.jsx) so what the customer sees is
+    what they get charged."""
+    if not percent:
+        return price
+    discounted = Decimal(str(price)) * (100 - percent) / 100
+    return float(discounted.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
+async def get_deal_percents() -> dict:
+    """{product_id: percent} for every deal in effect right now."""
+    return {d["product_id"]: d["percent"] for d in await get_active_deals()}
 
 
 async def get_active_deals():

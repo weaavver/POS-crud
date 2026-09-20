@@ -11,11 +11,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <CartProvider>
-          <DealsProvider>
+        <DealsProvider>
+          <CartProvider>
             <App />
-          </DealsProvider>
-        </CartProvider>
+          </CartProvider>
+        </DealsProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

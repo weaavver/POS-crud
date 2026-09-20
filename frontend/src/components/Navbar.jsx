@@ -16,7 +16,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false });
   const linkRefs = useRef([]);
-  const { items } = useCart();
+  const { count } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -83,9 +83,9 @@ export default function Navbar() {
             </Link>
             <Link to="/cart" className="text-[#c7d5e0] hover:text-white transition-colors relative">
               <ShoppingCart size={20} />
-              {items.length > 0 && (
+              {count > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#66c0f4] text-[#171a21] text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {items.length}
+                  {count}
                 </span>
               )}
             </Link>

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../api/orders';
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart();
+  const { items, total, clearCart, loading } = useCart();
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
@@ -14,6 +14,10 @@ export default function Checkout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (loading) {
+    return <p className="text-[#8f98a0] px-4 py-10 max-w-2xl mx-auto">Loading...</p>;
   }
 
   if (items.length === 0) {
@@ -50,7 +54,12 @@ export default function Checkout() {
         {items.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">
             <span className="text-[#c7d5e0]">{item.title}</span>
-            <span className="text-white">${item.price.toFixed(2)}</span>
+            <span className="text-white">
+              {item.discountPercent && (
+                <span className="text-xs text-[#8f98a0] line-through mr-2">${item.listPrice.toFixed(2)}</span>
+              )}
+              ${item.price.toFixed(2)}
+            </span>
           </div>
         ))}
         <div className="border-t border-[#2a3f5a] pt-3 flex justify-between font-bold">

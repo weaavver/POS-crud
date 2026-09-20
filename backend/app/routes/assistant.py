@@ -10,6 +10,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.database import orders_collection, products_collection
 from app.models.assistant import ChatRequest, ChatResponse, ReportFile
+from app.routes.deals import apply_discount, get_deal_percents
 from app.utils.security import get_optional_admin
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
@@ -59,6 +60,7 @@ async def _build_catalog_context() -> str:
     assistant can only ever recommend real products at their real prices —
     never hallucinated titles or prices."""
     lines = []
+    deal_percents = await get_deal_percents()
     cursor = products_collection.find(
         {}, {"title": 1, "price": 1, "type": 1, "platform": 1, "description": 1}
     ).limit(MAX_CATALOG_ITEMS)
@@ -67,9 +69,15 @@ async def _build_catalog_context() -> str:
         if len(desc) > 140:
             desc = desc[:140].rsplit(" ", 1)[0] + "..."
         link = f"{STORE_BASE_URL}/products/{p['_id']}"
+        price = p.get("price", 0)
+        percent = deal_percents.get(str(p["_id"]))
+        if percent:
+            price_text = f"${apply_discount(price, percent):.2f} (ON SALE, {percent}% off, was ${price:.2f})"
+        else:
+            price_text = f"${price:.2f}"
         lines.append(
             f"- {p.get('type', 'item')} | \"{p.get('title', 'Untitled')}\" "
-            f"| ${p.get('price', 0):.2f} | {p.get('platform', 'N/A')} | {desc} | link: {link}"
+            f"| {price_text} | {p.get('platform', 'N/A')} | {desc} | link: {link}"
         )
     return "\n".join(lines) if lines else "(the catalog is currently empty)"
 
@@ -81,7 +89,9 @@ def _system_prompt(catalog: str, is_admin: bool) -> str:
         "Rules:\n"
         "- Only recommend or mention products that appear in the CATALOG below. Never "
         "invent titles, prices, or platforms that aren't listed there.\n"
-        "- Catalog prices are current and authoritative — never guess or estimate a price.\n"
+        "- Catalog prices are current and authoritative — never guess or estimate a price. "
+        "Entries marked ON SALE are discounted right now: quote the sale price and "
+        "mention the original price and the percentage off.\n"
         "- Each catalog entry includes a real product page link. When a visitor asks for a "
         "link, wants to buy something, or would clearly benefit from one, share that exact "
         "link verbatim (don't shorten, alter, or invent one).\n"
@@ -255,7 +265,7 @@ async def chat(payload: ChatRequest, is_admin: bool = Depends(get_optional_admin
     body = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
         "contents": contents,
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 512},
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 1024},
     }
     if is_admin:
         body["tools"] = [{"functionDeclarations": [SALES_REPORT_TOOL]}]

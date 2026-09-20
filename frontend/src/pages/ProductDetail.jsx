@@ -15,7 +15,7 @@ export default function ProductDetail() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fading, setFading] = useState(false);
   const [theaterOpen, setTheaterOpen] = useState(false);
-  const { addItem, items } = useCart();
+  const { addItem, hasItems } = useCart();
   const { deals } = useDeals();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function ProductDetail() {
   const deal = getDiscountedPrice(product, deals);
   const finalPrice = deal ? deal.discountedPrice : product.price;
 
-  const inCart = items.some((i) => i.id === product.id);
+  const inCart = hasItem(product.id);
 
   const handleAddToCart = () => {
     if (!user) {
@@ -46,7 +46,7 @@ export default function ProductDetail() {
       navigate('/login', { state: { from: location } });
       return;
     }
-    addItem({ ...product, price: finalPrice });
+    addItem(product);
   };
   const allImages = (product.gallery_images || []).filter(Boolean);
   const activeImage = allImages[activeIndex] || product.cover_image;
