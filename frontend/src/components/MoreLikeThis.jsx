@@ -6,6 +6,7 @@ import { getProducts } from '../api/products';
 export default function MoreLikeThis({ excludeId }) {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
+  const [fading, setFading] = useState(false);
   const navigate = useNavigate();
   const perPage = 4;
 
@@ -22,8 +23,16 @@ export default function MoreLikeThis({ excludeId }) {
   const totalPages = Math.max(1, Math.ceil(items.length / perPage));
   const visible = items.slice(page * perPage, page * perPage + perPage);
 
-  const goPrev = () => setPage((p) => (p - 1 + totalPages) % totalPages);
-  const goNext = () => setPage((p) => (p + 1) % totalPages);
+  const changePage = (newPageFn) => {
+    setFading(true);
+    setTimeout(() => {
+      setPage(newPageFn);
+      setFading(false);
+    }, 150);
+  };
+
+  const goPrev = () => changePage((p) => (p - 1 + totalPages) % totalPages);
+  const goNext = () => changePage((p) => (p + 1) % totalPages);
 
   return (
     <div className="mt-8 bg-[#16202d]/90 border border-[#2a3f5a] rounded p-5">
@@ -41,7 +50,12 @@ export default function MoreLikeThis({ excludeId }) {
           </button>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+        <div
+          className={
+            'grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1 transition-opacity duration-150 ' +
+            (fading ? 'opacity-0' : 'opacity-100')
+          }
+        >
           {visible.map((item) => (
             <button
               key={item.id}
@@ -72,6 +86,21 @@ export default function MoreLikeThis({ excludeId }) {
           </button>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-1.5 mt-4">
+          {Array.from({ length: totalPages }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => changePage(() => idx)}
+              className={
+                'h-1 rounded-full transition-all duration-300 ' +
+                (idx === page ? 'w-8 bg-[#66c0f4]' : 'w-8 bg-[#3a4a5c] hover:bg-[#4d6178]')
+              }
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
