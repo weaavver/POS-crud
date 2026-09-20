@@ -3,7 +3,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from typing import List, Optional
 
-from app.database import products_collection
+from app.database import products_collection, manual_deals_collection
 from app.models.product import ProductCreate, ProductUpdate, ProductOut
 from app.utils.security import require_admin, get_optional_admin
 
@@ -79,4 +79,7 @@ async def delete_product(product_id: str, admin=Depends(require_admin)):
     result = await products_collection.delete_one({"_id": obj_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    # A deleted game can't stay on the Special Offers list
+    await manual_deals_collection.delete_one({"_id": product_id})
     return None

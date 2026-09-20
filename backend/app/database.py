@@ -11,3 +11,6 @@ db = client.pos_shop
 users_collection = db.users
 products_collection = db.products
 orders_collection = db.orders
+# Special Offers: the daily random pair, and the games the admin hand-picked
+deals_collection = db.deals
+manual_deals_collection = db.manual_deals
