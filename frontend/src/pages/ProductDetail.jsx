@@ -15,7 +15,7 @@ export default function ProductDetail() {
     getProduct(id)
       .then((data) => {
         setProduct(data);
-        setActiveImage(data.cover_image);
+        setActiveImage(data.gallery_images?.[0] || data.cover_image);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
