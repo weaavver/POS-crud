@@ -33,6 +33,14 @@ function loadGoogleScript() {
 export default function GoogleButton({ onCredential }) {
   const containerRef = useRef(null);
 
+  // Keep the latest callback in a ref. The parent recreates it on every render
+  // (e.g. each keystroke in the login form); if it were an effect dependency,
+  // the Google button would be torn down and re-rendered every time.
+  const onCredentialRef = useRef(onCredential);
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
+
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
       console.error('VITE_GOOGLE_CLIENT_ID is not set — Google sign-in is disabled.');
@@ -46,7 +54,7 @@ export default function GoogleButton({ onCredential }) {
 
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
-        callback: (response) => onCredential(response.credential),
+        callback: (response) => onCredentialRef.current(response.credential),
       });
 
       // Clear before rendering in case of a fast remount (e.g. React StrictMode).
@@ -56,13 +64,16 @@ export default function GoogleButton({ onCredential }) {
         size: 'large',
         width: 320,
         text: 'continue_with',
+        // Without this, the button uses the browser/Google-account language
+        // (e.g. Tagalog) and swaps to it a moment after first appearing.
+        locale: 'en',
       });
     });
 
     return () => {
       cancelled = true;
     };
-  }, [onCredential]);
+  }, []);
 
   if (!GOOGLE_CLIENT_ID) return null;
 
