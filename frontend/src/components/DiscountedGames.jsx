@@ -34,6 +34,7 @@ export default function DiscountedGames() {
   // copies at either end, then jumps back to the matching real card.
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(true);
+  const [sliding, setSliding] = useState(false); // mirrors busy.current, but reactive (for disabling controls)
   const busy = useRef(false); // ignore clicks while a slide is running
   const timer = useRef(null);
   const perView = usePerView();
@@ -56,6 +57,7 @@ export default function DiscountedGames() {
   const slideTo = (target) => {
     if (busy.current || target === current) return;
     busy.current = true;
+    setSliding(true);
     setAnimate(true);
     setIndex(target);
     timer.current = setTimeout(() => {
@@ -64,6 +66,7 @@ export default function DiscountedGames() {
       setAnimate(false);
       setIndex((i) => (i >= n ? i - n : i < 0 ? i + n : i));
       busy.current = false;
+      setSliding(false);
     }, SLIDE_MS);
   };
 
@@ -111,8 +114,8 @@ export default function DiscountedGames() {
 
         {canSlide && (
           <>
-            <CarouselArrow direction="left" onClick={goPrev} />
-            <CarouselArrow direction="right" onClick={goNext} />
+            <CarouselArrow direction="left" onClick={goPrev} disabled={sliding} />
+            <CarouselArrow direction="right" onClick={goNext} disabled={sliding} />
           </>
         )}
       </div>
@@ -123,9 +126,10 @@ export default function DiscountedGames() {
             <button
               key={idx}
               onClick={() => slideTo(idx)}
+              disabled={sliding}
               aria-label={'Show offer ' + (idx + 1)}
               className={
-                'h-1 w-8 rounded-full transition-colors duration-300 ' +
+                'h-1 w-8 rounded-full transition-colors duration-300 cursor-pointer disabled:cursor-not-allowed ' +
                 (idx === activeDot ? 'bg-[#66c0f4]' : 'bg-[#3a4a5c] hover:bg-[#4d6178]')
               }
             />
@@ -137,15 +141,17 @@ export default function DiscountedGames() {
 }
 
 // Tall, dark, semi-transparent button with a thick chevron, sitting on the card edges
-function CarouselArrow({ direction, onClick }) {
+function CarouselArrow({ direction, onClick, disabled }) {
   const isLeft = direction === 'left';
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       aria-label={isLeft ? 'Previous offers' : 'Next offers'}
       className={
         'absolute top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-10 h-20 ' +
         'bg-black/40 hover:bg-black/70 text-[#bfc2c5] hover:text-white transition-colors ' +
+        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-black/40 disabled:hover:text-[#bfc2c5] ' +
         (isLeft ? 'left-0' : 'right-0')
       }
     >
