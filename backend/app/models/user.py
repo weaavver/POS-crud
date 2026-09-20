@@ -15,6 +15,20 @@ class UserLogin(BaseModel):
     password: str
 
 
+class GoogleAuth(BaseModel):
+    credential: str  # Google ID token (JWT) from the Sign In With Google button
+    # Only needed for a brand-new account, once the frontend has asked the
+    # user to pick a username and is resubmitting with it.
+    username: Optional[str] = Field(default=None, min_length=3, max_length=20, pattern=r"^[a-zA-Z0-9_]+$")
+
+
+class NeedsUsername(BaseModel):
+    needs_username: Literal[True] = True
+    suggested_name: str
+    email: EmailStr
+    name: str
+
+
 class UserOut(BaseModel):
     id: str
     name: str
