@@ -102,7 +102,7 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 font-chat">
       {open && (
         <div className="w-[340px] sm:w-[380px] h-[480px] max-h-[75vh] bg-[#16202d] border border-[#2a3f5a] rounded-sm shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
@@ -133,10 +133,10 @@ export default function ChatWidget() {
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-sm px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`text-sm leading-relaxed whitespace-pre-wrap ${
                     m.role === 'user'
-                      ? 'bg-[#66c0f4] text-[#171a21]'
-                      : 'bg-[#1b2838] text-white border border-[#2a3f5a]'
+                      ? 'max-w-[85%] rounded-sm px-3 py-2 bg-[#66c0f4] text-[#171a21]'
+                      : 'w-full py-1 text-white'
                   }`}
                 >
                   {renderWithLinks(m.content)}
@@ -154,7 +154,7 @@ export default function ChatWidget() {
             ))}
             {sending && (
               <div className="flex justify-start">
-                <div className="bg-[#1b2838] border border-[#2a3f5a] rounded-sm px-3 py-2 text-sm text-[#8f98a0]">
+                <div className="py-1 text-sm text-[#8f98a0]">
                   <span className="inline-flex gap-1">
                     <span className="animate-bounce [animation-delay:-0.3s]">.</span>
                     <span className="animate-bounce [animation-delay:-0.15s]">.</span>
