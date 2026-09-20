@@ -123,7 +123,14 @@ def _gemini_request(body: dict) -> dict:
             detail="The assistant is a little busy right now — try again in a moment.",
         )
     if not resp.ok:
-        raise HTTPException(status_code=502, detail="The assistant couldn't respond right now.")
+        try:
+            message = resp.json().get("error", {}).get("message", "")
+        except ValueError:
+            message = ""
+        detail = "The assistant couldn't respond right now."
+        if message:
+            detail += f" ({message})"
+        raise HTTPException(status_code=502, detail=detail)
     return resp.json()
 
 
@@ -251,7 +258,7 @@ async def chat(payload: ChatRequest, is_admin: bool = Depends(get_optional_admin
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 512},
     }
     if is_admin:
-        body["tools"] = [{"function_declarations": [SALES_REPORT_TOOL]}]
+        body["tools"] = [{"functionDeclarations": [SALES_REPORT_TOOL]}]
 
     data = await run_in_threadpool(_gemini_request, body)
     function_call = _extract_function_call(data)
