@@ -176,8 +176,8 @@ export default function SearchBox({ mobile = false, onSelect }) {
               onClick={() => goTo(product)}
               onMouseEnter={() => setActive(i)}
               className={
-                'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ' +
-                (i === active ? 'bg-[#1b2838]' : '')
+                'w-full flex items-center gap-3 px-3 py-2 text-left cursor-pointer border-l-2 transition-colors duration-200 ease-out ' +
+                (i === active ? 'bg-[#22344a] border-[#66c0f4]' : 'bg-transparent border-transparent')
               }
             >
               <div className="w-16 h-8 bg-[#1b2838] overflow-hidden shrink-0">
@@ -244,7 +244,7 @@ export default function SearchBox({ mobile = false, onSelect }) {
         type="button"
         onClick={() => (open ? closeAndClear() : setOpen(true))}
         aria-label={open ? 'Close search' : 'Open search'}
-        className="relative z-10 text-[#c7d5e0] hover:text-white transition-colors"
+        className="relative z-10 text-[#c7d5e0] hover:text-white transition-colors cursor-pointer"
       >
         <Search size={20} />
       </button>
