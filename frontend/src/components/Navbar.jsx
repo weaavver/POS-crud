@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, LogOut, Menu, X } from 'lucide-react';
+import { User, ShoppingCart, LogOut, Menu, X } from 'lucide-react';
+import SearchBox from './SearchBox';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
@@ -75,9 +76,7 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-5">
-            <button className="text-[#c7d5e0] hover:text-white transition-colors">
-              <Search size={20} />
-            </button>
+            <SearchBox />
             <Link to="/orders" className="text-[#c7d5e0] hover:text-white transition-colors">
               <User size={20} />
             </Link>
@@ -109,13 +108,13 @@ export default function Navbar() {
 
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#171a21] border-t border-[#2a3f5a] px-4 py-4 space-y-3">
+          <SearchBox mobile onSelect={() => setMobileMenuOpen(false)} />
           {navLinks.map((link) => (
             <Link key={link.path} to={link.path} className="block text-sm font-medium text-[#c7d5e0] hover:text-white">
               {link.label}
             </Link>
           ))}
           <div className="flex items-center gap-5 pt-3 border-t border-[#2a3f5a]">
-            <Search size={20} className="text-[#c7d5e0]" />
             <Link to="/orders">
               <User size={20} className="text-[#c7d5e0]" />
             </Link>
