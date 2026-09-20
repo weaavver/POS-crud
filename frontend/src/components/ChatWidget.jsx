@@ -17,13 +17,7 @@ function renderWithLinks(text) {
   const parts = text.split(URL_SPLIT_PATTERN);
   return parts.map((part, i) =>
     URL_TEST_PATTERN.test(part) ? (
-      
-        key={i}
-        href={part}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 underline hover:text-blue-300 break-all"
-      >
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline hover:text-blue-300 break-all">
         {part}
       </a>
     ) : (
