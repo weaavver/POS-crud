@@ -38,7 +38,7 @@ export default function ProductCard({ product }) {
         to={`/products/${product.id}`}
         className={
           'bg-[#16202d] overflow-hidden border border-[#2a3f5a] block transition-all duration-200 ease-out ' +
-          (isHovering ? 'scale-110 shadow-2xl shadow-black/60' : 'scale-100')
+          (isHovering ? 'scale-105 shadow-2xl shadow-black/60' : 'scale-100')
         }
       >
         <div className="relative aspect-[460/215] bg-[#1b2838] overflow-hidden">
