@@ -16,8 +16,12 @@ async def get_current_deals():
     existing = await deals_collection.find_one({"_id": "current"})
     now = datetime.now(timezone.utc)
 
-    if existing and existing["expires_at"] > now:
-        return existing["items"]
+    if existing:
+        expires_at = existing["expires_at"]
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at > now:
+            return existing["items"]
 
     previous_ids = [item["product_id"] for item in existing["items"]] if existing else []
 
