@@ -1,4 +1,5 @@
 import Navbar from './Navbar';
+import ChatWidget from './ChatWidget';
 import { useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
@@ -10,6 +11,7 @@ export default function Layout({ children }) {
       <main key={location.pathname} className="page-transition">
         {children}
       </main>
+      <ChatWidget />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, products, orders, deals
+from app.routes import auth, products, orders, deals, assistant
 import os
 
 app = FastAPI(title="POS Games & E-book Shop API")
@@ -26,6 +26,7 @@ app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(deals.router)
+app.include_router(assistant.router)
 
 @app.get("/")
 async def root():
