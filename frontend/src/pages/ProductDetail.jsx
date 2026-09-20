@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
 import MoreLikeThis from '../components/MoreLikeThis';
+import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function ProductDetail() {
   const [fading, setFading] = useState(false);
   const [theaterOpen, setTheaterOpen] = useState(false);
   const { addItem, items } = useCart();
+  const { deals } = useDeals();
 
   useEffect(() => {
     getProduct(id)
@@ -28,6 +30,9 @@ export default function ProductDetail() {
   if (loading) return <p className="text-[#8f98a0] px-4 py-10 max-w-5xl mx-auto">Loading...</p>;
   if (error) return <p className="text-red-400 px-4 py-10 max-w-5xl mx-auto">{error}</p>;
   if (!product) return null;
+
+  const deal = getDiscountedPrice(product, deals);
+  const finalPrice = deal ? deal.discountedPrice : product.price;
 
   const inCart = items.some((i) => i.id === product.id);
   const allImages = (product.gallery_images || []).filter(Boolean);
@@ -126,10 +131,18 @@ export default function ProductDetail() {
                 />
               )}
 
-              <p className="text-3xl font-bold text-white">${product.price.toFixed(2)}</p>
+              {deal && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-green-500 text-[#171a21] text-xs font-bold px-2 py-1 rounded">
+                    -{deal.percent}%
+                  </span>
+                  <span className="text-sm text-[#8f98a0] line-through">${product.price.toFixed(2)}</span>
+                </div>
+              )}
+              <p className="text-3xl font-bold text-white">${finalPrice.toFixed(2)}</p>
 
               <button
-                onClick={() => addItem(product)}
+                onClick={() => addItem({ ...product, price: finalPrice })}
                 disabled={inCart}
                 className="mt-4 w-full bg-[#66c0f4] text-[#171a21] font-semibold rounded py-3 hover:bg-[#7fd0ff] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >

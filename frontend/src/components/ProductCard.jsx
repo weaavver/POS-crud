@@ -1,10 +1,14 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
 export default function ProductCard({ product }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const intervalRef = useRef(null);
+  const { deals } = useDeals();
+  const deal = getDiscountedPrice(product, deals);
+  const finalPrice = deal ? deal.discountedPrice : product.price;
 
   const images = [product.cover_image, ...(product.gallery_images || [])].filter(Boolean);
   const hasImage = images.length > 0;
@@ -14,7 +18,7 @@ export default function ProductCard({ product }) {
     if (images.length <= 1) return;
     intervalRef.current = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % images.length);
-    }, 2500);
+    }, 1500);
   };
 
   const stopCycling = () => {
@@ -34,7 +38,7 @@ export default function ProductCard({ product }) {
         to={`/products/${product.id}`}
         className={
           'bg-[#16202d] overflow-hidden border border-[#2a3f5a] block transition-all duration-200 ease-out ' +
-          (isHovering ? 'scale-105 shadow-2xl shadow-black/60' : 'scale-100')
+          (isHovering ? 'scale-110 shadow-2xl shadow-black/60' : 'scale-100')
         }
       >
         <div className="relative aspect-[460/215] bg-[#1b2838] overflow-hidden">
@@ -55,6 +59,12 @@ export default function ProductCard({ product }) {
               <div className="w-full h-full animate-pulse bg-gradient-to-br from-[#1b2838] via-[#22344a] to-[#1b2838] bg-[length:200%_200%]" />
             </div>
           )}
+
+          {deal && (
+            <span className="absolute top-2 left-2 bg-green-500 text-[#171a21] text-xs font-bold px-2 py-1 rounded">
+              -{deal.percent}%
+            </span>
+          )}
         </div>
 
         <div className="px-4 py-3">
@@ -62,7 +72,17 @@ export default function ProductCard({ product }) {
             {product.title}
           </h3>
           <p className="text-xs text-[#8f98a0] mt-1">{product.platform}</p>
-          <p className="text-white font-bold mt-2">${product.price.toFixed(2)}</p>
+
+          {deal ? (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-[#8f98a0] line-through">${product.price.toFixed(2)}</span>
+              <span className="text-white font-bold">${finalPrice.toFixed(2)}</span>
+            </div>
+          ) : product.price === 0 ? (
+            <span className="text-green-400 font-bold mt-2 block">FREE</span>
+          ) : (
+            <p className="text-white font-bold mt-2">${product.price.toFixed(2)}</p>
+          )}
         </div>
       </Link>
     </div>
