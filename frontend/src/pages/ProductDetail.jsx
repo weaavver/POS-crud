@@ -15,7 +15,7 @@ export default function ProductDetail() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fading, setFading] = useState(false);
   const [theaterOpen, setTheaterOpen] = useState(false);
-  const { addItem, hasItems } = useCart();
+  const { addItem, hasItem } = useCart();
   const { deals } = useDeals();
   const { user } = useAuth();
   const navigate = useNavigate();
