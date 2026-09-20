@@ -3,19 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../api/products';
 import { useDeals, getDiscountedPrice } from '../context/DealsContext';
 
-// How many cards fit side by side (matches Tailwind's `sm` breakpoint)
+// How many cards fit side by side: 1 on phones, 2 on tablets, 3 on desktop
+// (matches Tailwind's `sm` and `lg` breakpoints)
+const WIDE_QUERY = '(min-width: 64rem)';
+const MEDIUM_QUERY = '(min-width: 40rem)';
+
+function countPerView() {
+  if (window.matchMedia(WIDE_QUERY).matches) return 3;
+  if (window.matchMedia(MEDIUM_QUERY).matches) return 2;
+  return 1;
+}
+
 function usePerView() {
-  const query = '(min-width: 40rem)';
-  const [wide, setWide] = useState(() => window.matchMedia(query).matches);
+  const [perView, setPerView] = useState(countPerView);
 
   useEffect(() => {
-    const mql = window.matchMedia(query);
-    const onChange = (e) => setWide(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
+    const lists = [WIDE_QUERY, MEDIUM_QUERY].map((q) => window.matchMedia(q));
+    const onChange = () => setPerView(countPerView());
+    lists.forEach((mql) => mql.addEventListener('change', onChange));
+    return () => lists.forEach((mql) => mql.removeEventListener('change', onChange));
   }, []);
 
-  return wide ? 2 : 1;
+  return perView;
 }
 
 const SLIDE_MS = 300;
@@ -94,7 +103,7 @@ export default function DiscountedGames() {
             {slides.map(({ game, key }) => {
               const { percent, discountedPrice } = getDiscountedPrice(game, deals);
               return (
-                <div key={key} className="w-full sm:w-1/2 shrink-0 px-2">
+                <div key={key} className="shrink-0 px-2" style={{ width: `${100 / perView}%` }}>
                   <DealCard game={game} percent={percent} discountedPrice={discountedPrice} />
                 </div>
               );
@@ -211,7 +220,7 @@ function DealCard({ game, percent, discountedPrice }) {
       <div className="p-3 flex items-center justify-between">
         <p className="text-sm text-white font-medium truncate pr-2">{game.title}</p>
         <div className="flex items-center gap-3 shrink-0">
-          <span className="bg-green-500 text-[#171a21] text-xl font-bold px-3 py-1.5 rounded">
+          <span className="bg-green-500 text-[#171a21] text-lg font-bold px-2.5 py-1 rounded">
             -{percent}%
           </span>
           <div className="flex flex-col items-end">
