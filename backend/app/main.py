@@ -6,17 +6,16 @@ import os
 app = FastAPI(title="POS Games & E-book Shop API")
 
 # Local dev is always allowed. In production, FRONTEND_URL adds the deployed site.
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "https://vault-weaavver.vercel.app"]
 frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
     origins.append(frontend_url.rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://vault-weaavver.vercel.app",
-    ],
+    allow_origins=origins,
+    # Vercel branch + per-deploy URLs: vault-git-<branch>-weaavver / vault-<hash>-weaavver
+    allow_origin_regex=r"https://vault(-[a-z0-9-]+)?-weaavver\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
